@@ -48,16 +48,23 @@ function SearchPage() {
   return (
     <>
       <TopBar>
-        <label className="flex max-w-md items-center gap-2 rounded-full bg-surface px-4 py-2">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setDebounced(query.trim());
+          }}
+          className="flex w-full max-w-md items-center gap-2 rounded-full bg-surface px-4 py-2"
+        >
           <Search className="size-4 text-muted-foreground" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="What do you want to listen to?"
             aria-label="Search"
+            autoFocus
             className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
-        </label>
+        </form>
       </TopBar>
 
       <div className="px-6 pb-10">
