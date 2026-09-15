@@ -30,11 +30,11 @@ function SearchPage() {
   const [debounced, setDebounced] = useState("");
 
   useEffect(() => {
-    const id = setTimeout(() => setDebounced(query.trim()), 350);
+    const id = setTimeout(() => setDebounced(query.trim()), 250);
     return () => clearTimeout(id);
   }, [query]);
 
-  const { data, isLoading } = useQuery(tracksQuery(debounced, 30));
+  const { data, isFetching, isError } = useQuery(tracksQuery(debounced, 30));
   const results = data ?? [];
 
   const matchedPlaylists = useMemo(() => {
