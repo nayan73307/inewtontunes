@@ -27,7 +27,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const { playQueue } = usePlayer();
-  const featured = playlists[0];
+  const featured = playlists[0]!;
 
   return (
     <>
