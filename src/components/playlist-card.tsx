@@ -1,10 +1,21 @@
 import { Link } from "@tanstack/react-router";
 import { Play } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { usePlayer } from "@/components/player-provider";
-import { playlistTracks, type Playlist } from "@/lib/music-data";
+import { tracksQuery } from "@/lib/music-queries";
+import type { Playlist } from "@/lib/music-data";
+
+function usePlayPlaylist(playlist: Playlist) {
+  const { playQueue } = usePlayer();
+  const queryClient = useQueryClient();
+  return async () => {
+    const tracks = await queryClient.ensureQueryData(tracksQuery(playlist.query));
+    if (tracks?.length) playQueue(tracks, 0);
+  };
+}
 
 export function PlaylistCard({ playlist }: { playlist: Playlist }) {
-  const { playQueue } = usePlayer();
+  const play = usePlayPlaylist(playlist);
 
   return (
     <div className="group hover-lift relative rounded-xl bg-card p-3 hover:bg-elevated">
@@ -28,7 +39,7 @@ export function PlaylistCard({ playlist }: { playlist: Playlist }) {
       </Link>
       <button
         type="button"
-        onClick={() => playQueue(playlistTracks(playlist), 0)}
+        onClick={() => void play()}
         aria-label={`Play ${playlist.name}`}
         className="absolute right-5 top-[52%] flex size-11 translate-y-3 items-center justify-center rounded-full bg-primary text-primary-foreground opacity-0 shadow-lg transition-all group-hover:translate-y-0 group-hover:opacity-100"
       >
@@ -39,7 +50,7 @@ export function PlaylistCard({ playlist }: { playlist: Playlist }) {
 }
 
 export function ShortcutTile({ playlist }: { playlist: Playlist }) {
-  const { playQueue } = usePlayer();
+  const play = usePlayPlaylist(playlist);
   return (
     <div className="group flex items-center gap-3 overflow-hidden rounded-md bg-elevated transition-colors hover:bg-muted">
       <Link
@@ -59,7 +70,7 @@ export function ShortcutTile({ playlist }: { playlist: Playlist }) {
       </Link>
       <button
         type="button"
-        onClick={() => playQueue(playlistTracks(playlist), 0)}
+        onClick={() => void play()}
         aria-label={`Play ${playlist.name}`}
         className="mr-3 flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground opacity-0 transition-opacity group-hover:opacity-100"
       >

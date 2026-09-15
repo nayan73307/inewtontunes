@@ -64,7 +64,7 @@ export function TrackList({ tracks }: { tracks: Track[] }) {
                 <Heart
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleLike(track.id);
+                    toggleLike(track);
                   }}
                   className={
                     liked.includes(track.id)
