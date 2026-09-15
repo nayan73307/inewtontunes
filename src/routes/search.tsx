@@ -110,10 +110,14 @@ function SearchPage() {
                 ))}
               </div>
             )}
-            {isLoading ? (
-              <p className="mt-6 text-sm text-muted-foreground">Searching…</p>
-            ) : results.length > 0 ? (
+            {results.length > 0 ? (
               <TrackList tracks={results} />
+            ) : isFetching ? (
+              <p className="mt-6 text-sm text-muted-foreground">Searching…</p>
+            ) : isError ? (
+              <p className="mt-6 text-sm text-muted-foreground">
+                Could not reach the music catalogue. Please try again.
+              </p>
             ) : (
               <p className="mt-6 text-sm text-muted-foreground">
                 No songs match “{query}”. Try another artist or album.
