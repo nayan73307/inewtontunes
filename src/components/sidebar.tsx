@@ -63,7 +63,7 @@ export function Sidebar() {
               <span className="min-w-0">
                 <span className="block truncate text-sm font-medium">{p.name}</span>
                 <span className="block truncate text-xs text-muted-foreground">
-                  Playlist · {p.trackIds.length} songs
+                  Playlist · {p.description}
                 </span>
               </span>
             </Link>

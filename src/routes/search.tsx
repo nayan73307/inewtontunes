@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TopBar } from "@/components/top-bar";
 import { TrackList } from "@/components/track-list";
-import { playlists, tracks } from "@/lib/music-data";
+import { tracksQuery } from "@/lib/music-queries";
+import { playlists } from "@/lib/music-data";
 
 export const Route = createFileRoute("/search")({
   head: () => ({
@@ -11,7 +13,7 @@ export const Route = createFileRoute("/search")({
       { title: "Search music — Resonate" },
       {
         name: "description",
-        content: "Search songs, artists, albums and playlists across the Resonate catalogue.",
+        content: "Search songs, artists, albums and playlists across millions of tracks.",
       },
       { property: "og:title", content: "Search music — Resonate" },
       {
@@ -25,19 +27,23 @@ export const Route = createFileRoute("/search")({
 
 function SearchPage() {
   const [query, setQuery] = useState("");
-  const q = query.trim().toLowerCase();
+  const [debounced, setDebounced] = useState("");
 
-  const results = useMemo(() => {
-    if (!q) return [];
-    return tracks.filter((t) =>
-      [t.title, t.artist, t.album].some((f) => f.toLowerCase().includes(q)),
-    );
-  }, [q]);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(query.trim()), 350);
+    return () => clearTimeout(id);
+  }, [query]);
+
+  const { data, isLoading } = useQuery(tracksQuery(debounced, 30));
+  const results = data ?? [];
 
   const matchedPlaylists = useMemo(() => {
+    const q = debounced.toLowerCase();
     if (!q) return [];
-    return playlists.filter((p) => p.name.toLowerCase().includes(q));
-  }, [q]);
+    return playlists.filter(
+      (p) => p.name.toLowerCase().includes(q) || p.query.toLowerCase().includes(q),
+    );
+  }, [debounced]);
 
   return (
     <>
@@ -55,9 +61,9 @@ function SearchPage() {
       </TopBar>
 
       <div className="px-6 pb-10">
-        <h1 className="text-2xl font-bold">{q ? "Results" : "Browse all"}</h1>
+        <h1 className="text-2xl font-bold">{debounced ? "Results" : "Browse all"}</h1>
 
-        {!q && (
+        {!debounced && (
           <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
             {playlists.map((p) => (
               <Link
@@ -81,7 +87,7 @@ function SearchPage() {
           </div>
         )}
 
-        {q && (
+        {debounced && (
           <>
             {matchedPlaylists.length > 0 && (
               <div className="mt-5 flex flex-wrap gap-3">
@@ -97,7 +103,9 @@ function SearchPage() {
                 ))}
               </div>
             )}
-            {results.length > 0 ? (
+            {isLoading ? (
+              <p className="mt-6 text-sm text-muted-foreground">Searching…</p>
+            ) : results.length > 0 ? (
               <TrackList tracks={results} />
             ) : (
               <p className="mt-6 text-sm text-muted-foreground">

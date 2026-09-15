@@ -4,7 +4,7 @@ import { TopBar } from "@/components/top-bar";
 import { PlaylistCard } from "@/components/playlist-card";
 import { TrackList } from "@/components/track-list";
 import { usePlayer } from "@/components/player-provider";
-import { getTrack, playlists, type Track } from "@/lib/music-data";
+import { playlists } from "@/lib/music-data";
 
 export const Route = createFileRoute("/library")({
   head: () => ({
@@ -25,10 +25,7 @@ export const Route = createFileRoute("/library")({
 });
 
 function LibraryPage() {
-  const { liked } = usePlayer();
-  const likedTracks = liked
-    .map((id) => getTrack(id))
-    .filter((t): t is Track => Boolean(t));
+  const { likedTracks } = usePlayer();
 
   return (
     <>

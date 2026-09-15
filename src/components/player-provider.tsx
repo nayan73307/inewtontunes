@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { Track } from "@/lib/music-data";
+import type { Track } from "@/lib/track";
 
 type PlayerState = {
   queue: Track[];
@@ -19,6 +19,7 @@ type PlayerState = {
   volume: number;
   shuffle: boolean;
   liked: string[];
+  likedTracks: Track[];
   playQueue: (tracks: Track[], startIndex?: number) => void;
   toggle: () => void;
   next: () => void;
@@ -26,7 +27,7 @@ type PlayerState = {
   seek: (seconds: number) => void;
   setVolume: (value: number) => void;
   toggleShuffle: () => void;
-  toggleLike: (id: string) => void;
+  toggleLike: (track: Track) => void;
 };
 
 const PlayerContext = createContext<PlayerState | null>(null);
@@ -40,7 +41,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(0.8);
   const [shuffle, setShuffle] = useState(false);
-  const [liked, setLiked] = useState<string[]>([]);
+  const [likedTracks, setLikedTracks] = useState<Track[]>([]);
+  const liked = useMemo(() => likedTracks.map((t) => t.id), [likedTracks]);
 
   const current = queue[index] ?? null;
 
@@ -129,8 +131,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setProgress(seconds);
   }, []);
 
-  const toggleLike = useCallback((id: string) => {
-    setLiked((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  const toggleLike = useCallback((track: Track) => {
+    setLikedTracks((prev) =>
+      prev.some((t) => t.id === track.id)
+        ? prev.filter((t) => t.id !== track.id)
+        : [...prev, track],
+    );
   }, []);
 
   const value = useMemo<PlayerState>(
@@ -143,6 +149,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       volume,
       shuffle,
       liked,
+      likedTracks,
       playQueue,
       toggle,
       next,
@@ -161,6 +168,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       volume,
       shuffle,
       liked,
+      likedTracks,
       playQueue,
       toggle,
       next,

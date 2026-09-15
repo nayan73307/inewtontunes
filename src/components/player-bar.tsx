@@ -50,7 +50,7 @@ export function PlayerBar() {
             </div>
             <button
               type="button"
-              onClick={() => toggleLike(current.id)}
+              onClick={() => toggleLike(current)}
               aria-label={isLiked ? "Remove from liked songs" : "Add to liked songs"}
               className="ml-2 text-muted-foreground transition-colors hover:text-primary"
             >
