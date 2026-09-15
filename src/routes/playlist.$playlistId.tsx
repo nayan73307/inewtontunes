@@ -1,9 +1,11 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Clock, Play, Shuffle } from "lucide-react";
 import { TopBar } from "@/components/top-bar";
 import { TrackList } from "@/components/track-list";
 import { usePlayer } from "@/components/player-provider";
-import { formatTime, getPlaylist, playlistTracks } from "@/lib/music-data";
+import { tracksQuery } from "@/lib/music-queries";
+import { formatTime, getPlaylist } from "@/lib/music-data";
 
 export const Route = createFileRoute("/playlist/$playlistId")({
   loader: ({ params }) => {
@@ -33,7 +35,8 @@ export const Route = createFileRoute("/playlist/$playlistId")({
 function PlaylistPage() {
   const { playlist } = Route.useLoaderData();
   const { playQueue, toggleShuffle } = usePlayer();
-  const list = playlistTracks(playlist);
+  const { data, isLoading } = useQuery(tracksQuery(playlist.query, 30));
+  const list = data ?? [];
   const total = list.reduce((sum, t) => sum + t.duration, 0);
 
   return (
@@ -59,7 +62,7 @@ function PlaylistPage() {
             <p className="mt-3 text-sm text-foreground/80">{playlist.description}</p>
             <p className="mt-2 flex items-center gap-2 text-xs text-foreground/70">
               <Clock className="size-3.5" />
-              {list.length} songs · {formatTime(total)}
+              {isLoading ? "Loading songs…" : `${list.length} songs · ${formatTime(total)}`}
             </p>
           </div>
         </div>
@@ -69,8 +72,9 @@ function PlaylistPage() {
         <div className="flex items-center gap-4 py-4">
           <button
             type="button"
+            disabled={!list.length}
             onClick={() => playQueue(list, 0)}
-            className="flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105"
+            className="flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105 disabled:opacity-60"
             aria-label={`Play ${playlist.name}`}
           >
             <Play className="size-6 fill-current" />
@@ -84,7 +88,11 @@ function PlaylistPage() {
             <Shuffle className="size-6" />
           </button>
         </div>
-        <TrackList tracks={list} />
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Loading songs…</p>
+        ) : (
+          <TrackList tracks={list} />
+        )}
       </div>
     </>
   );

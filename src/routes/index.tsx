@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Play } from "lucide-react";
 import { TopBar } from "@/components/top-bar";
 import { PlaylistCard, ShortcutTile } from "@/components/playlist-card";
 import { TrackList } from "@/components/track-list";
 import { usePlayer } from "@/components/player-provider";
-import { playlists, playlistTracks, tracks } from "@/lib/music-data";
+import { tracksQuery } from "@/lib/music-queries";
+import { newReleasesQuery, playlists } from "@/lib/music-data";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,6 +30,8 @@ export const Route = createFileRoute("/")({
 function Home() {
   const { playQueue } = usePlayer();
   const featured = playlists[0]!;
+  const featuredTracks = useQuery(tracksQuery(featured.query));
+  const newReleases = useQuery(tracksQuery(newReleasesQuery, 12));
 
   return (
     <>
@@ -55,11 +59,12 @@ function Home() {
               </p>
               <button
                 type="button"
-                onClick={() => playQueue(playlistTracks(featured), 0)}
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-transform hover:scale-105"
+                disabled={!featuredTracks.data?.length}
+                onClick={() => playQueue(featuredTracks.data ?? [], 0)}
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-transform hover:scale-105 disabled:opacity-60"
               >
                 <Play className="size-4 fill-current" />
-                Play
+                {featuredTracks.isLoading ? "Loading" : "Play"}
               </button>
             </div>
           </div>
@@ -85,7 +90,11 @@ function Home() {
 
         <section className="mt-10">
           <h2 className="text-xl font-bold">New releases</h2>
-          <TrackList tracks={tracks.slice(0, 6)} />
+          {newReleases.isLoading ? (
+            <p className="mt-3 text-sm text-muted-foreground">Loading songs…</p>
+          ) : (
+            <TrackList tracks={newReleases.data ?? []} />
+          )}
         </section>
       </div>
     </>
